@@ -73,6 +73,7 @@ Pygments==2.17.2
 pyparsing==3.1.1
 PySocks==1.7.1
 python-dateutil==2.8.2
+python-dotenv==1.0.1
 pytz==2023.3.post1
 pyzmq==25.1.2
 referencing==0.32.1
@@ -111,6 +112,7 @@ urllib3==2.1.0
 validators==0.22.0
 watchdog==3.0.0
 wcwidth==0.2.13
+webdriver-manager==4.0.1
 Werkzeug==3.0.1
 wordcloud==1.9.3
 wrapt==1.14.1

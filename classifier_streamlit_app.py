@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import time
 
+# from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from bs4 import BeautifulSoup
@@ -62,8 +63,9 @@ classifier = load_model('sentiment_model_tf.h5')
 input_text = st.text_input('Type in sentence')
 input = preprocess_text(input_text)
 
-
+# Classifier function
 score = classifier.predict(input)
+
 sentiment_classes = {0:'neutral', 1:'positive', 2:'negative'}
 predicted_class = np.argmax(score)
 certainty = 100 * np.max(score)
@@ -82,6 +84,7 @@ st.write('')
 
 # Driver headless mode
 chrome_opts = Options()
+# chrome_opts = webdriver.ChromeOptions()
 chrome_opts.add_argument('--headless')
 st.subheader('Tweet URL input')
 tweet_url = st.text_input('Paste tweet URL to extract tweet')
@@ -101,11 +104,12 @@ def scrape_tweet_url(url):
     try:
         # Get Tweet text with bs4 
         tweet_source = tweet_soup.find("div",{"data-testid":"tweetText"})
+        
         tweet_text = tweet_source.find('span', class_='css-1qaijid r-bcqeeo r-qvutc0 r-poiln3').text
 
     except:
         tweet_text = None
-        st.write('      404. Tweet Not Found')
+        st.write('404. Tweet Not Found')
         
     return tweet_text
 
@@ -113,17 +117,20 @@ def scrape_tweet_url(url):
 
 def scrape_and_classify(scrape_function):
     try: # Exception handling
-        if st.button('Check tweet'):
-          tweet = scrape_function(tweet_url)
-          processed_tweet = preprocess_text(tweet)
-          score = classifier.predict(processed_tweet)
-          predicted_class = np.argmax(score)
-          certainty = 100 * np.max(score)
-          
-          # Print output
-          st.write(f'Tweet text: {tweet}')
-          st.write(f'Predicted: {sentiment_classes[predicted_class]}')
-          st.write(f'Certainty: {certainty:.2f}%')
+        if tweet_url:  
+            if st.button('Check tweet'):
+              tweet = scrape_function(tweet_url)
+              processed_tweet = preprocess_text(tweet)
+              score = classifier.predict(processed_tweet)
+              predict_class = np.argmax(score)
+              percent_certainty = 100 * np.max(score)
+              
+              # Print output
+              st.write(f'Tweet text: {tweet}')
+              st.write(f'Predicted: {sentiment_classes[predict_class]}')
+              st.write(f'Certainty: {percent_certainty:.2f}%')
+        else:
+          pass  
     
     except:
         st.write('404 Not found. Error occured in retrieving tweet')
