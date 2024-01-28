@@ -4,16 +4,14 @@ import numpy as np
 import pandas as pd
 import time
 import tracemalloc
-import chromedriver_autoinstaller
 
 from bs4 import BeautifulSoup
 from keras.models import load_model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 
 # Memory allocation tracing
 tracemalloc.start()
@@ -103,13 +101,13 @@ tweet_url = st.text_input('Paste tweet URL to extract tweet')
 
 
 def get_driver():
-    return webdriver.Chrome(service=Service("driver/chromedriver"), options=opts)
+    return webdriver.Firefox(service=Service("driver/geckodriver"), options=opts)
+
 
 
 def scrape_tweet_url(url):
     driver = get_driver() 
     driver.get(url)
-    time.sleep(3)
     
     response = driver.page_source
     driver.quit()
@@ -124,7 +122,7 @@ def scrape_tweet_url(url):
 
     except:
         tweet_text = None
-        st.write('404. Tweet Not Found')
+        st.markdown('''<span style='background: darkred; color: white;'> 404. Tweet Not Found</span>''', unsafe_allow_html=True)
         
     return tweet_text
 
@@ -150,7 +148,7 @@ def scrape_and_classify(scrape_function):
         ''', unsafe_allow_html=True)
     
     except:
-        st.write('404 Not found. Error occured in retrieving tweet')
+        st.write('Please Enter tweet link')
         # Fallback message(In case of error)
 
 
@@ -160,12 +158,11 @@ if st.button('Check tweet'):
   
 # Process Running signal
 with st.spinner("Running..."):
-  result = scrape_and_classify(scrape_function=scrape_tweet_url)
-  st.success('Successful')
+    result = scrape_and_classify(scrape_function=scrape_tweet_url)
+    st.success('Successful')
   
 
 # Footer
-
 st.write('')
 st.write('')
 st.write('')
