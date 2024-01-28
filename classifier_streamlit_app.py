@@ -102,7 +102,7 @@ tweet_url = st.text_input('Paste tweet URL to extract tweet')
 
 
 def get_driver():
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
+    return webdriver.Chrome(service=Service('chromedriver'), options=opts)
 
 
 def scrape_tweet_url(url):
