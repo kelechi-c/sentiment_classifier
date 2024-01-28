@@ -75,9 +75,7 @@ certainty = 100 * np.max(score)
 
 if st.button('Classify Text'):
     with st.spinner("Checking..."):
-        sent_class = predicted_class
-        if sent_class:
-            st.markdown(f'''
+        st.markdown(f'''
             <div style="background-color: black; color: white; font-weight: bold; padding: 1rem; border-radius: 10px;">
             <h4>Results</h4>
                 <h5>Input text: </h5>
@@ -94,6 +92,7 @@ if st.button('Classify Text'):
 st.write('')
 st.write('')
 
+st.session_state.disabled = False
 
 # Tweet scraping functionality
 
@@ -102,7 +101,9 @@ opts = Options()
 opts.add_argument('--headless')
 opts.add_argument('--disable-gpu')
 st.subheader('Tweet URL input')
-tweet_url = st.text_input('Paste tweet URL to extract tweet')
+st.write('Tweet section disabled due to Selenium error')
+# tweet_url = st.text_input('Paste tweet URL to extract tweet', disabled=st.session_state.disabled)
+tweet_url = ''
 
 
 def get_driver():
@@ -124,7 +125,6 @@ def scrape_tweet_url(url):
         tweet_text = tweet_source.find('span', class_='css-1qaijid r-bcqeeo r-qvutc0 r-poiln3').text
 
     except:
-        tweet_text = None
         st.markdown('''<span style='background: darkred; color: white;'> 404. Tweet Not Found</span>''', unsafe_allow_html=True)
         
     return tweet_text
@@ -155,9 +155,9 @@ def scrape_and_classify(scrape_function):
                     <p style='background: maroon; color: white; font-weight: bold; padding: 1rem; border-radius: 10px;'> 404. Tweet Not Found. Enter a valid link </p>
         ''', unsafe_allow_html=True)
         # Fallback message(In case of error)
-
-
-if st.button('Check tweet'):
+button = ''
+# button = st.button('Check tweet', disabled=st.session_state.disabled)
+if button:
 # Process Running signal
   with st.spinner("Processing tweet..."):
     result = scrape_and_classify(scrape_function=scrape_tweet_url)
