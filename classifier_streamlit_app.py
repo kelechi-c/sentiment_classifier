@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import time
 import tracemalloc
+import chromedriver_autoinstaller
 
 from bs4 import BeautifulSoup
 from keras.models import load_model
@@ -102,7 +103,8 @@ tweet_url = st.text_input('Paste tweet URL to extract tweet')
 
 
 def get_driver():
-    return webdriver.Chrome(service=Service('chromedriver'), options=opts)
+    chromedriver_autoinstaller.install()
+    return webdriver.Chrome(options=opts)
 
 
 def scrape_tweet_url(url):
