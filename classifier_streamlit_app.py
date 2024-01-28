@@ -14,6 +14,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 
+# Memory allocation tracing
 tracemalloc.start()
 
 
@@ -52,7 +53,7 @@ st.markdown('''
          It is an application of Natural language processing using Tensorflow, and web scraping(for Tweets). 
     ''')
 
-#Process text for classification
+# Process text for classification
 def preprocess_text(text):
   text = text.lower()
   input_sequence = tokenizer.texts_to_sequences([text])
@@ -99,6 +100,7 @@ opts.add_argument('--disable-gpu')
 st.subheader('Tweet URL input')
 tweet_url = st.text_input('Paste tweet URL to extract tweet')
 
+
 def get_driver():
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
 
@@ -126,7 +128,6 @@ def scrape_tweet_url(url):
     return tweet_text
 
 
-# @st.cache_resource(experimental_allow_widgets=True)
 def scrape_and_classify(scrape_function):
     try: # Exception handling
         tweet = scrape_function(tweet_url)
