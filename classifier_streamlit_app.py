@@ -2,7 +2,6 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import time
 import tracemalloc
 
 from bs4 import BeautifulSoup
