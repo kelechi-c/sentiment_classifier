@@ -69,28 +69,26 @@ input = preprocess_text(input_text)
 # Classifier function
 score = classifier.predict(input)
 
-# def get_output():
 sentiment_classes = {0:'neutral', 1:'positive', 2:'negative'}
 predicted_class = np.argmax(score)
 certainty = 100 * np.max(score)
     
-    # return sentiment_classes, predicted_class, certainty
 
 if st.button('Classify Text'):
-    with st.spinner("Running..."):
+    with st.spinner("Checking..."):
         sent_class = predicted_class
         if sent_class:
             st.markdown(f'''
             <div style="background-color: black; color: white; font-weight: bold; padding: 1rem; border-radius: 10px;">
             <h4>Results</h4>
-                <h5>Tweet text: </h5>
+                <h5>Input text: </h5>
                 <p>{input_text}</p>
                 <p>
                   Predicted connotation => <span style="font-weight: bold;">{sentiment_classes[predicted_class]}</span> with <span style="font-weight: bold;">{certainty:.2f}% </span>certainty
                 </p>
             </div>
                 ''', unsafe_allow_html=True)
-            st.success('Successful')
+        st.success('Successful')
     
     
     
@@ -109,7 +107,7 @@ tweet_url = st.text_input('Paste tweet URL to extract tweet')
 
 
 def get_driver():
-    return webdriver.Chrome(service=Service("driver/geckodriver"), options=opts)
+    return webdriver.Firefox(service=Service("driver/geckodriver"), options=opts)
 
 
 def scrape_tweet_url(url):
@@ -124,13 +122,11 @@ def scrape_tweet_url(url):
     try:
         # Get Tweet text with bs4 
         tweet_source = tweet_soup.find("div",{"data-testid":"tweetText"})
-        
         tweet_text = tweet_source.find('span', class_='css-1qaijid r-bcqeeo r-qvutc0 r-poiln3').text
 
     except:
         tweet_text = None
         st.markdown('''<span style='background: darkred; color: white;'> 404. Tweet Not Found</span>''', unsafe_allow_html=True)
-        
         
     return tweet_text
 
@@ -163,14 +159,11 @@ def scrape_and_classify(scrape_function):
 
 
 if st.button('Check tweet'):
-  result = scrape_and_classify(scrape_tweet_url)
-  scrape_and_classify(scrape_tweet_url(tweet_url)) # Final function
-  
 # Process Running signal
-with st.spinner("Running..."):
-  result = scrape_and_classify(scrape_function=scrape_tweet_url)
-  if result:
-      st.success('Successful')
+  with st.spinner("Processing tweet..."):
+    result = scrape_and_classify(scrape_function=scrape_tweet_url)
+    st.success('Successful')
+
   
 
 # Footer
