@@ -1,17 +1,20 @@
 #Import statements
 import streamlit as st
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 import time
+import tracemalloc
 
-# from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
 from bs4 import BeautifulSoup
 from keras.models import load_model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
+tracemalloc.start()
 
 
 # Data preparation
@@ -31,10 +34,10 @@ for category in categories:
   labels.append(category)
 
 train_size = 28000
-
 train_text = sentences[0:train_size]
 test_text = sentences[train_size:]
 
+# Text tokenizer
 tokenizer = Tokenizer(num_words=48244, oov_token='<OOV>')
 tokenizer.fit_on_texts(train_text)
 
@@ -71,9 +74,16 @@ predicted_class = np.argmax(score)
 certainty = 100 * np.max(score)
 
 if st.button('Classify Text'):
-    st.write(f'Input Sentence: {input_text}')
-    st.write(f'Predicted: {sentiment_classes[predicted_class]}')
-    st.write(f'Certainty: {certainty:.2f}%')
+    st.markdown(f'''
+            <div style="background-color: black; color: white; font-weight: bold; padding: 1rem; border-radius: 10px;">
+            <h4>Results</h4>
+                <h5>Tweet text: </h5>
+                <p>{input_text}</p>
+                <p>
+                  Predicted connotation => <span style="font-weight: bold;">{sentiment_classes[predicted_class]}</span> with <span style="font-weight: bold;">{certainty:.2f}% </span>certainty
+                </p>
+            </div>
+      ''', unsafe_allow_html=True)
     
     
 st.write('')
@@ -83,21 +93,23 @@ st.write('')
 # Tweet scraping functionality
 
 # Driver headless mode
-chrome_opts = Options()
-# chrome_opts = webdriver.ChromeOptions()
-chrome_opts.add_argument('--headless')
+opts = Options()
+opts.add_argument('--headless')
+opts.add_argument('--disable-gpu')
 st.subheader('Tweet URL input')
 tweet_url = st.text_input('Paste tweet URL to extract tweet')
 
+def get_driver():
+    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
+
+
 def scrape_tweet_url(url):
-        
-    driver = webdriver.Chrome(options=chrome_opts) # Initialize web driver
-    driver.minimize_window()
+    driver = get_driver() 
     driver.get(url)
-    time.sleep(2)
+    time.sleep(3)
     
     response = driver.page_source
-    driver.close()
+    driver.quit()
     
     tweet_soup = BeautifulSoup(response, 'html.parser')
     
@@ -114,29 +126,41 @@ def scrape_tweet_url(url):
     return tweet_text
 
 
-
+# @st.cache_resource(experimental_allow_widgets=True)
 def scrape_and_classify(scrape_function):
     try: # Exception handling
-        if tweet_url:  
-            if st.button('Check tweet'):
-              tweet = scrape_function(tweet_url)
-              processed_tweet = preprocess_text(tweet)
-              score = classifier.predict(processed_tweet)
-              predict_class = np.argmax(score)
-              percent_certainty = 100 * np.max(score)
-              
-              # Print output
-              st.write(f'Tweet text: {tweet}')
-              st.write(f'Predicted: {sentiment_classes[predict_class]}')
-              st.write(f'Certainty: {percent_certainty:.2f}%')
-        else:
-          pass  
+        tweet = scrape_function(tweet_url)
+        processed_tweet = preprocess_text(tweet)
+        score = classifier.predict(processed_tweet)
+        predict_class = np.argmax(score)
+        percent_certainty = 100 * np.max(score)
+        
+        # Print output
+        st.markdown(f'''
+            <div style="background-color: black; color: white; font-weight: bold; padding: 1rem; border-radius: 10px;">
+               <h4>Results</h4>
+               <h5>Tweet text: </h5>
+                <p>{tweet}</p>
+                <p>
+                 Predicted connotation => <span style="font-weight: bold;">{sentiment_classes[predict_class]}</span> with <span style="font-weight: bold;">{percent_certainty:.2f}% </span>certainty
+                </p>
+            </div>
+        ''', unsafe_allow_html=True)
     
     except:
         st.write('404 Not found. Error occured in retrieving tweet')
         # Fallback message(In case of error)
-    
-scrape_and_classify(scrape_tweet_url) # Final function
+
+
+if st.button('Check tweet'):
+  result = scrape_and_classify(scrape_tweet_url)
+  scrape_and_classify(scrape_tweet_url(tweet_url)) # Final function
+  
+# Process Running signal
+with st.spinner("Running..."):
+  result = scrape_and_classify(scrape_function=scrape_tweet_url)
+  st.success('Successful')
+  
 
 # Footer
 
